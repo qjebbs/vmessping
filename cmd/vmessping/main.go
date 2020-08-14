@@ -28,7 +28,12 @@ func main() {
 	var vmess string
 	if flag.NArg() == 0 {
 		if vmess = os.Getenv("VMESS"); vmess == "" {
+			fmt.Println("To ping a vmess link:")
 			fmt.Println(os.Args[0], "vmess://....")
+			fmt.Println()
+			fmt.Println("To ping a config file:")
+			fmt.Println(os.Args[0], "path/to/config.json")
+			fmt.Println()
 			flag.Usage()
 			os.Exit(1)
 		}

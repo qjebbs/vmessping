@@ -23,6 +23,27 @@ import (
 	"v2ray.com/core/infra/conf"
 )
 
+func JSON2Outbound(f string, usemux bool) (*core.OutboundHandlerConfig, error) {
+	c := &conf.Config{}
+	data, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, err
+	}
+	json.Unmarshal(data, c)
+	if err != nil {
+		return nil, err
+	}
+	out := c.OutboundConfigs[0]
+	out.Tag = "proxy"
+	out.Protocol = "vmess"
+	out.MuxSettings = &conf.MuxConfig{}
+	if usemux {
+		out.MuxSettings.Enabled = true
+		out.MuxSettings.Concurrency = 8
+	}
+	return out.Build()
+}
+
 func Vmess2Outbound(v *vmess.VmessLink, usemux bool) (*core.OutboundHandlerConfig, error) {
 
 	out := &conf.OutboundDetourConfig{}
@@ -114,17 +135,20 @@ func StartV2Ray(vm string, verbose, usemux bool) (*core.Instance, error) {
 	if verbose {
 		loglevel = commlog.Severity_Debug
 	}
-
-	lk, err := vmess.ParseVmess(vm)
+	ob, err := JSON2Outbound(vm, usemux)
 	if err != nil {
-		return nil, err
+		lk, err := vmess.ParseVmess(vm)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("\n" + lk.DetailStr())
+		ob, err = Vmess2Outbound(lk, usemux)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	fmt.Println("\n" + lk.DetailStr())
-	ob, err := Vmess2Outbound(lk, usemux)
-	if err != nil {
-		return nil, err
-	}
 	config := &core.Config{
 		App: []*serial.TypedMessage{
 			serial.ToTypedMessage(&applog.Config{

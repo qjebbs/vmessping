@@ -18,7 +18,12 @@ Download in [Release](https://github.com/v2fly/vmessping/releases/latest)
 # Usage
 
 ```
+To ping a vmess link:
 ./vmessping vmess://....
+
+To ping a config file:
+./vmessping path/to/config.json
+
 Usage of ./vmessping:
   -c uint
         Count. Stop after sending COUNT requests (default 9999)
@@ -34,6 +39,8 @@ Usage of ./vmessping:
         fast quit on error counts
   -v    verbose (debug log)
 ```
+
+> If the json file contains multiple outbounds, vmessping takes only the 1st one.
 
 # Example
 ```
