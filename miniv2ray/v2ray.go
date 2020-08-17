@@ -39,7 +39,6 @@ func JSON2Outbound(f string, usemux bool) (*core.OutboundHandlerConfig, error) {
 	}
 	out := c.OutboundConfigs[0]
 	out.Tag = "proxy"
-	out.Protocol = "vmess"
 	out.MuxSettings = &conf.MuxConfig{}
 	if usemux {
 		out.MuxSettings.Enabled = true
