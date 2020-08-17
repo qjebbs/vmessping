@@ -11,6 +11,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
 
 	"github.com/v2fly/vmessping/vmess"
 	"v2ray.com/core"
@@ -32,6 +33,9 @@ func JSON2Outbound(f string, usemux bool) (*core.OutboundHandlerConfig, error) {
 	json.Unmarshal(data, c)
 	if err != nil {
 		return nil, err
+	}
+	if c.OutboundConfigs == nil || len(c.OutboundConfigs) == 0 {
+		return nil, fmt.Errorf("no valid outbound found in %s", f)
 	}
 	out := c.OutboundConfigs[0]
 	out.Tag = "proxy"
@@ -135,8 +139,12 @@ func StartV2Ray(vm string, verbose, usemux bool) (*core.Instance, error) {
 	if verbose {
 		loglevel = commlog.Severity_Debug
 	}
-	ob, err := JSON2Outbound(vm, usemux)
-	if err != nil {
+	var (
+		ob  *core.OutboundHandlerConfig
+		err error
+	)
+	var u *url.URL
+	if u, err = url.Parse(vm); err == nil && u.Scheme != "" {
 		lk, err := vmess.ParseVmess(vm)
 		if err != nil {
 			return nil, err
@@ -144,9 +152,11 @@ func StartV2Ray(vm string, verbose, usemux bool) (*core.Instance, error) {
 
 		fmt.Println("\n" + lk.DetailStr())
 		ob, err = Vmess2Outbound(lk, usemux)
-		if err != nil {
-			return nil, err
-		}
+	} else {
+		ob, err = JSON2Outbound(vm, usemux)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	config := &core.Config{
