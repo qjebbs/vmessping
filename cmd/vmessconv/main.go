@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/v2fly/vmessping/vmess"
+	"github.com/qjebbs/v2tool/vmess"
 )
 
 var (

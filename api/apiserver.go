@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"context"
@@ -135,7 +135,7 @@ func jsonToOutboundConfigs(f string) ([]conf.OutboundDetourConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	json.Unmarshal(data, c)
+	err = json.Unmarshal(data, c)
 	if err != nil {
 		return nil, err
 	}

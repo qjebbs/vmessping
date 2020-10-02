@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/v2fly/vmessping"
+	vmessping "github.com/qjebbs/v2tool/vmessping"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	mv2ray "github.com/v2fly/vmessping/miniv2ray"
+	mv2ray "github.com/qjebbs/v2tool/miniv2ray"
 )
 
 func PrintVersion(mv string) {

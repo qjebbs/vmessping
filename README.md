@@ -1,5 +1,5 @@
 # vmessping
-![Build Status](https://github.com/v2fly/vmessping/workflows/Go/badge.svg) 
+![Build Status](https://github.com/qjebbs/v2tool/workflows/Go/badge.svg) 
 
 A ping prober for `vmess://` links in common seen formats.
 
@@ -13,7 +13,7 @@ A ping prober for `vmess://` links in common seen formats.
 
 Binaries are built automaticly by Github Action.
 
-Download in [Release](https://github.com/v2fly/vmessping/releases/latest)
+Download in [Release](https://github.com/qjebbs/v2tool/releases/latest)
 
 # Usage
 
@@ -66,7 +66,7 @@ rtt min/avg/max = 761/1002/1368 ms
 
 # Compile from source
 ```
-git clone https://github.com/v2fly/vmessping.git
+git clone https://github.com/qjebbs/v2tool.git
 cd vmessping/cmd/vmessping
 go build
 ```

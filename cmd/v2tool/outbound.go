@@ -4,6 +4,8 @@ import (
 	"flag"
 	"os"
 	"strings"
+
+	"github.com/qjebbs/v2tool/api"
 )
 
 type stringArrayFlags []string
@@ -45,7 +47,7 @@ func outboundRemove(args []string) {
 	if err != nil {
 		return
 	}
-	server := APIServer{
+	server := api.APIServer{
 		Host: *host,
 		Port: uint16(*port),
 	}
@@ -70,7 +72,7 @@ func outboundAdd(args []string) {
 	if err != nil {
 		return
 	}
-	server := APIServer{
+	server := api.APIServer{
 		Host: *host,
 		Port: uint16(*port),
 	}

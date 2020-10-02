@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/v2fly/vmessping/vmess"
+	"github.com/qjebbs/v2tool/vmess"
 	"v2ray.com/core"
 	"v2ray.com/core/app/dispatcher"
 	applog "v2ray.com/core/app/log"
