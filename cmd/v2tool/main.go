@@ -18,6 +18,7 @@ Usage:
 
 The commands are:
 
+		config      merge multiple config files into one.
         ping        ping a vmess link / json outbound config file (vmessping)
         outbound    add / remove outbounds through v2ray api server
 
@@ -48,6 +49,8 @@ func main() {
 		ping(args)
 	case "outbound":
 		outbound(args)
+	case "config":
+		mergeConfig(args)
 	default:
 		usageAndExit(1)
 	}
