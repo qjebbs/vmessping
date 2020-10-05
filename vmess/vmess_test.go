@@ -19,20 +19,20 @@ func TestNewQuanVmess(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    string
-		want    *VmessLink
+		want    *Link
 		wantErr bool
 	}{
 		// TODO: Add test cases.
 		{
 			"1",
 			"vmess://",
-			Must(NewVnVmess("")).(*VmessLink),
+			Must(NewVnVmess("")).(*Link),
 			false,
 		},
 		{
 			"2",
 			"",
-			Must(NewVnVmess("")).(*VmessLink),
+			Must(NewVnVmess("")).(*Link),
 			false,
 		},
 	}

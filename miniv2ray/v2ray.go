@@ -46,7 +46,7 @@ func JSON2Outbound(f string, usemux bool) (*core.OutboundHandlerConfig, error) {
 	return out.Build()
 }
 
-func Vmess2Outbound(v *vmess.VmessLink, usemux bool) (*core.OutboundHandlerConfig, error) {
+func Vmess2Outbound(v *vmess.Link, usemux bool) (*core.OutboundHandlerConfig, error) {
 	out, err := vmess.Link2Outbound(v, usemux)
 	out.Tag = "proxy"
 	if err != nil {

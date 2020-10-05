@@ -11,7 +11,7 @@ import (
 
 // Link2JSON converts vmess link to json string
 func Link2JSON(v string) ([]byte, error) {
-	var lk *VmessLink
+	var lk *Link
 	var err error
 	lk, err = ParseVmess(v)
 	out, err := Link2Outbound(lk, false)
@@ -29,7 +29,7 @@ func Link2JSON(v string) ([]byte, error) {
 }
 
 // Link2Outbound converts vmess link to *OutboundDetourConfig
-func Link2Outbound(v *VmessLink, usemux bool) (*conf.OutboundDetourConfig, error) {
+func Link2Outbound(v *Link, usemux bool) (*conf.OutboundDetourConfig, error) {
 	out := &conf.OutboundDetourConfig{}
 	out.Tag = asFileName(v.Ps)
 	out.Protocol = "vmess"

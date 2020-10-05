@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	// MAINVER main version
 	MAINVER = "0.0.0-src"
 )
 
