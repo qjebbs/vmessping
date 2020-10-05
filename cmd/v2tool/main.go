@@ -15,13 +15,14 @@ v2tool is a helper for using v2ray.
 
 Usage:
 
-        v2tool <command> [arguments]
+	v2tool <command> [arguments]
 
 The commands are:
 
-		config      merge multiple config files into one.
-        ping        ping a vmess link / json outbound config file (vmessping)
-        outbound    add / remove outbounds through v2ray api server
+	config          merge multiple config files into one.
+	ping            ping a vmess link / json outbound file (vmessping)
+	outbound        add / remove outbounds through v2ray api server
+	subscriptions   fetches subscription specified by config
 
 Use "v2tool help <command>" for more information about a command.
 `
@@ -52,6 +53,8 @@ func main() {
 		outbound(args)
 	case "config":
 		mergeConfig(args)
+	case "subscriptions":
+		subscriptionsCmd(args)
 	default:
 		usageAndExit(1)
 	}

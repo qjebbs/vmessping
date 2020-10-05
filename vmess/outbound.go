@@ -3,35 +3,14 @@ package vmess
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"v2ray.com/core/infra/conf"
 )
 
-// Link2JSON converts vmess link to json string
-func Link2JSON(v string) ([]byte, error) {
-	var lk *Link
-	var err error
-	lk, err = ParseVmess(v)
-	out, err := Link2Outbound(lk, false)
-	if err != nil {
-		return nil, err
-	}
-	type outConfig struct {
-		OutboundConfigs []conf.OutboundDetourConfig
-	}
-	return json.Marshal(outConfig{
-		OutboundConfigs: []conf.OutboundDetourConfig{
-			*out,
-		},
-	})
-}
-
 // Link2Outbound converts vmess link to *OutboundDetourConfig
 func Link2Outbound(v *Link, usemux bool) (*conf.OutboundDetourConfig, error) {
 	out := &conf.OutboundDetourConfig{}
-	out.Tag = asFileName(v.Ps)
 	out.Protocol = "vmess"
 	out.MuxSettings = &conf.MuxConfig{}
 	if usemux {
@@ -111,10 +90,4 @@ func Link2Outbound(v *Link, usemux bool) (*conf.OutboundDetourConfig, error) {
 }`, v.Add, v.Port, v.ID, v.Aid)))
 	out.Settings = &oset
 	return out, nil
-}
-
-func asFileName(ps string) string {
-	reg := regexp.MustCompile(`([\\/:*?"<>|]|\s)+`)
-	r := reg.ReplaceAll([]byte(ps), []byte(" "))
-	return strings.Trim(string(r), " ")
 }
