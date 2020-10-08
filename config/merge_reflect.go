@@ -7,6 +7,8 @@ import (
 	"os"
 	"reflect"
 	"sort"
+
+	"github.com/qjebbs/v2tool/files"
 )
 
 type routerConfigRaw struct {
@@ -44,7 +46,7 @@ type outboundWithPriority struct {
 // MergeJSONsWithReflect merge multiple json config files to Conifg
 // This keeps json orders, but only sorts routing rules and outbounds
 func MergeJSONsWithReflect(paths []string) ([]byte, error) {
-	files, err := pathsToFiles(paths)
+	files, err := files.PathsToFiles(paths)
 	if err != nil {
 		return nil, err
 	}

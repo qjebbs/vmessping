@@ -6,11 +6,13 @@ import (
 	"os"
 	"reflect"
 	"sort"
+
+	"github.com/qjebbs/v2tool/files"
 )
 
 // MergeJSONs merge multiple json config files to Conifg
 func MergeJSONs(paths []string) ([]byte, error) {
-	files, err := pathsToFiles(paths)
+	files, err := files.PathsToFiles(paths)
 	if err != nil {
 		return nil, err
 	}

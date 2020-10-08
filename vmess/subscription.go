@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/qjebbs/v2tool/files"
 	"v2ray.com/core/infra/conf"
 )
 
@@ -38,6 +38,93 @@ Match: %s`,
 
 // FetchSubscriptions fetches subscription specified by "conf", and generating json files to "outdir"
 func FetchSubscriptions(conf string, outdir string, socketMark int32) error {
+	filesMap, err := getFilesMap(outdir)
+	if err != nil {
+		return err
+	}
+	writeFile := func(filename string, data []byte) error {
+		if file, ok := filesMap[filename]; ok {
+			// file exist
+			rel, err := filepath.Rel(outdir, file)
+			if err != nil {
+				return err
+			}
+			hasher := md5.New()
+			s, err := ioutil.ReadFile(file)
+			if err != nil {
+				return err
+			}
+			hasher.Write(s)
+			fileMD5 := hex.EncodeToString(hasher.Sum(nil))
+			hasher.Reset()
+			hasher.Write(data)
+			dataMD5 := hex.EncodeToString(hasher.Sum(nil))
+			if fileMD5 != dataMD5 {
+				fmt.Println("Updated:", rel)
+				err = ioutil.WriteFile(file, data, 0644)
+				if err != nil {
+					return err
+				}
+			}
+			delete(filesMap, filename)
+			return nil
+		}
+		// file not exist
+		file := filepath.Join(outdir, filename)
+		fmt.Println("Added:", filename)
+		return ioutil.WriteFile(file, data, 0644)
+
+	}
+	asFileName := func(ps string) string {
+		reg := regexp.MustCompile(`([\\/:*?"<>|]|\s)+`)
+		r := reg.ReplaceAll([]byte(ps), []byte(" "))
+		return strings.TrimSpace(string(r))
+	}
+	subscriptionToJSONs := func(sub *Subscription) error {
+		fmt.Println(sub)
+		fmt.Println("Output:", outdir)
+		if socketMark != 0 {
+			fmt.Println("Sokect mark:", socketMark)
+		}
+		fmt.Println("Downloading...")
+		links, err := LinksFromSubscription(sub.URL)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%v link(s) found...\n", len(links))
+
+		links, err = filterLinks(links, sub.Ignore, sub.Match)
+		if err != nil {
+			return err
+		}
+		for _, link := range links {
+			out, err := Link2Outbound(link, false)
+			if err != nil {
+				return err
+			}
+			out.Tag = asFileName(sub.Tag + " - " + link.Ps)
+			filename := out.Tag + ".json"
+			content, err := outbound2JSON(out, socketMark)
+			if err != nil {
+				return err
+			}
+			err = writeFile(filename, content)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	subscriptionsToJSONs := func(subs []*Subscription) error {
+		for _, sub := range subs {
+			err := subscriptionToJSONs(sub)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	c := &SubscriptionConfig{}
 	data, err := ioutil.ReadFile(conf)
 	if err != nil {
@@ -47,55 +134,30 @@ func FetchSubscriptions(conf string, outdir string, socketMark int32) error {
 	if err != nil {
 		return err
 	}
-	return SubscriptionsToJSONs(c.Subscriptions, outdir, socketMark)
-}
-
-// SubscriptionsToJSONs fetch multiple subscriptions and generating json files
-func SubscriptionsToJSONs(subs []*Subscription, dir string, socketMark int32) error {
-	for _, sub := range subs {
-		err := SubscriptionToJSONs(sub, dir, socketMark)
+	err = subscriptionsToJSONs(c.Subscriptions)
+	if err != nil {
+		return err
+	}
+	for _, file := range filesMap {
+		rel, err := filepath.Rel(outdir, file)
 		if err != nil {
 			return err
 		}
+		fmt.Println("Removed:", rel)
 	}
 	return nil
 }
 
-// SubscriptionToJSONs fetch subscription and generating json files
-func SubscriptionToJSONs(sub *Subscription, dir string, socketMark int32) error {
-	fmt.Println(sub)
-	fmt.Println("Output:", dir)
-	if socketMark != 0 {
-		fmt.Println("Sokect mark:", socketMark)
-	}
-	fmt.Println("Downloading...")
-	links, err := LinksFromSubscription(sub.URL)
+func getFilesMap(dir string) (map[string]string, error) {
+	files, err := files.GetFolderFiles(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Printf("%v link(s) found...\n", len(links))
-
-	links, err = filterLinks(links, sub.Ignore, sub.Match)
-	if err != nil {
-		return err
+	filesMap := make(map[string]string)
+	for _, f := range files {
+		filesMap[filepath.Base(f)] = f
 	}
-	for _, link := range links {
-		out, err := Link2Outbound(link, false)
-		if err != nil {
-			return err
-		}
-		out.Tag = asFileName(sub.Tag + " - " + link.Ps)
-		file := path.Join(dir, out.Tag+".json")
-		content, err := outbound2JSON(out, socketMark)
-		if err != nil {
-			return err
-		}
-		err = writeFile(file, content)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return filesMap, nil
 }
 
 // outbound2JSON converts vmess link to json string
@@ -116,36 +178,6 @@ func outbound2JSON(out *conf.OutboundDetourConfig, socketMark int32) ([]byte, er
 			*out,
 		},
 	})
-}
-
-func asFileName(ps string) string {
-	reg := regexp.MustCompile(`([\\/:*?"<>|]|\s)+`)
-	r := reg.ReplaceAll([]byte(ps), []byte(" "))
-	return strings.TrimSpace(string(r))
-}
-
-func writeFile(filename string, data []byte) error {
-	_, err := os.Stat(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			fmt.Println("Added:", path.Base(filename))
-			return ioutil.WriteFile(filename, data, 0644)
-		}
-		return err
-	}
-	// file exist
-	hasher := md5.New()
-	s, err := ioutil.ReadFile(filename)
-	hasher.Write(s)
-	fileMD5 := hex.EncodeToString(hasher.Sum(nil))
-	hasher.Reset()
-	hasher.Write(data)
-	dataMD5 := hex.EncodeToString(hasher.Sum(nil))
-	if fileMD5 != dataMD5 {
-		fmt.Println("Updated:", path.Base(filename))
-		return ioutil.WriteFile(filename, data, 0644)
-	}
-	return nil
 }
 
 // LinksFromSubscription downloads and parses links from a subscription URL

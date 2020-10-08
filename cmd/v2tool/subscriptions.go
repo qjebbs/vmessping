@@ -4,9 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
 
+	"github.com/qjebbs/v2tool/files"
 	"github.com/qjebbs/v2tool/vmess"
 )
 
@@ -24,12 +23,12 @@ func subscriptionsCmd(args []string) {
 		subsCmd.Usage()
 		os.Exit(1)
 	}
-	c, err := resolvePath(*conf)
+	c, err := files.ResolvePath(*conf)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	d, err := resolvePath(*outdir)
+	d, err := files.ResolvePath(*outdir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -39,21 +38,4 @@ func subscriptionsCmd(args []string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func resolvePath(p string) (string, error) {
-	if filepath.HasPrefix(p, "~") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", fmt.Errorf("Cannot resolve path %s: %v", p, err)
-		}
-		return path.Join(home, p[2:]), nil
-	} else if !filepath.IsAbs(p) {
-		wd, err := os.Getwd()
-		if err != nil {
-			return "", err
-		}
-		return path.Join(wd, p), nil
-	}
-	return p, nil
 }
